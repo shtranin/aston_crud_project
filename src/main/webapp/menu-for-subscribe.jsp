@@ -44,7 +44,7 @@
             <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>User count</th>
+<%--                <th>User count</th>--%>
 
             </tr>
             </thead>
@@ -53,8 +53,9 @@
             <c:forEach var="group" items="${listGroup}">
 
                 <tr>
+                    <td><c:out value="${group.id}" /></td>
                     <td><c:out value="${group.name}" /></td>
-                    <td><c:out value="${group.userCount}" /></td>
+<%--                    <td><c:out value="${group.userCount}" /></td>--%>
 
                     <td> <a href="subscribe_group?group_id=<c:out value='${group.id}'/>&user_id=<c:out value='${userId}' />">Subscribe</a></td>
                 </tr>

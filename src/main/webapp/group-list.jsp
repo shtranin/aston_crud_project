@@ -46,8 +46,9 @@
             <thead>
             <tr>
                 <th>ID</th>
+                <th>Type</th>
                 <th>Name</th>
-                <th>User count</th>
+
 
             </tr>
             </thead>
@@ -57,8 +58,8 @@
 
                 <tr>
                     <td><c:out value="${group.id}" /></td>
+                    <td><c:out value="${group.getClass().getSimpleName()}" /></td>
                     <td><c:out value="${group.name}" /></td>
-                    <td><c:out value="${group.userCount}" /></td>
 
                     <td> <a href="delete_group?id=<c:out value='${group.id}' />">Delete</a></td>
                 </tr>

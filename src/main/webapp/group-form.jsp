@@ -40,6 +40,16 @@
                                                         value="<c:out value='${group.name}' />" class="form-control"
                                                         name="name" required="required">
                     </fieldset>
+                    <fieldset class="form-group">
+                        <label>Group Type(Public/Private/Channel)</label> <input type="text"
+                                                         value="<c:out value='${group.name}' />" class="form-control"
+                                                         name="type" required="required">
+                    </fieldset>
+                    <fieldset class="form-group">
+                        <label>Parameter (Theme/Max_members/Author)</label> <input type="text"
+                                                                                 value="<c:out value='${group.name}' />" class="form-control"
+                                                                                 name="param" required="required">
+                    </fieldset>
 
 
                     <button type="submit" class="btn btn-success">Save</button>

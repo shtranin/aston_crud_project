@@ -3,10 +3,18 @@ package com.example.aston_crud3.web;
 
 import com.example.aston_crud3.commandContainer.Command;
 import com.example.aston_crud3.commandContainer.CommandContainer;
-import com.example.aston_crud3.dao.GroupDAO;
-import com.example.aston_crud3.dao.UserDAO;
-import com.example.aston_crud3.model.Group;
+import com.example.aston_crud3.dao.groupDAO.GroupDAOImpl;
+import com.example.aston_crud3.dao.old_dao_classes.ChannelGroupDAOImpl;
+import com.example.aston_crud3.dao.old_dao_classes.PrivateGroupDAOImpl;
+import com.example.aston_crud3.dao.old_dao_classes.PublicGroupDAOImpl;
+import com.example.aston_crud3.dao.userDAO.UserDAOImpl;
+import com.example.aston_crud3.dao.old_dao_classes.GroupDAO;
+import com.example.aston_crud3.dao.old_dao_classes.UserDAO;
+import com.example.aston_crud3.model.group.ChannelGroup;
+import com.example.aston_crud3.model.group.Group;
 import com.example.aston_crud3.model.User;
+import com.example.aston_crud3.model.group.PrivateGroup;
+import com.example.aston_crud3.model.group.PublicGroup;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -17,19 +25,22 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @WebServlet("/")
 public class UserServlet extends HttpServlet {
     private UserDAO userDAO;
     private GroupDAO groupDAO;
-    private ExecutorService service;
+    private UserDAOImpl userDAOImpl;
+    private GroupDAOImpl groupDAOImpl;
+
+
 
     public void init() {
         userDAO = new UserDAO();
         groupDAO = new GroupDAO();
-        service = Executors.newFixedThreadPool(3);
+        userDAOImpl = new UserDAOImpl();
+        groupDAOImpl = new GroupDAOImpl();
+
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
@@ -38,16 +49,16 @@ public class UserServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
 
-            String action = request.getServletPath();
-            CommandContainer container = CommandContainer.getInstance();
-            Command command = container.receiveCommand(action);
-            command.execute(request,response,this);
+        String action = request.getServletPath();
+        CommandContainer container = CommandContainer.getInstance();
+        Command command = container.receiveCommand(action);
+        command.execute(request, response, this);
 
     }
 
     public void listUser(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException, ServletException {
-        List<User> listUser = userDAO.selectAllUsers();
+        List<User> listUser = userDAOImpl.getAll();
         request.setAttribute("listUser", listUser);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/user-list.jsp");
         dispatcher.forward(request, response);
@@ -61,8 +72,8 @@ public class UserServlet extends HttpServlet {
 
     public void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        User existingUser = userDAO.selectUser(id);
+        long id = Long.parseLong(request.getParameter("id"));
+        User existingUser = userDAOImpl.getById(id);
         RequestDispatcher dispatcher = request.getRequestDispatcher("user-form.jsp");
         request.setAttribute("user", existingUser);
         dispatcher.forward(request, response);
@@ -74,79 +85,108 @@ public class UserServlet extends HttpServlet {
         String name = request.getParameter("name");
         String email = request.getParameter("email");
         User newUser = new User(name, email);
-        userDAO.insertUser(newUser);
+
+
+        userDAOImpl.save(newUser);
         response.sendRedirect("list");
     }
 
     public void updateUser(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        long id = Long.parseLong(request.getParameter("id"));
         String name = request.getParameter("name");
         String email = request.getParameter("email");
 
         User user = new User(id, name, email);
-        userDAO.updateUser(user);
+
+
+        userDAOImpl.update(user);
         response.sendRedirect("list");
     }
 
     public void deleteUser(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        userDAO.deleteUser(id);
+        long id = Long.parseLong(request.getParameter("id"));
+
+        userDAOImpl.deleteById(id);
         response.sendRedirect("list");
 
     }
-    public void userGroups(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        List<Group> userGroups = groupDAO.selectAllGroupsByUserId(id);
+
+    public void userGroups(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        long id = Long.parseLong(request.getParameter("id"));
+        List<Group> userGroups = groupDAOImpl.getAllByUserId(id);
         request.setAttribute("userGroups", userGroups);
         RequestDispatcher dispatcher = request.getRequestDispatcher("user's-groups.jsp");
         dispatcher.forward(request, response);
     }
+
     public void listOfAllGroups(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<Group> listGroup = groupDAO.selectAllGroups();
+        List<Group> listGroup = groupDAOImpl.getAll();
         request.setAttribute("listGroup", listGroup);
         RequestDispatcher dispatcher = request.getRequestDispatcher("group-list.jsp");
-            dispatcher.forward(request, response);
+        dispatcher.forward(request, response);
     }
-    public void deleteGroup(HttpServletRequest request,HttpServletResponse response) throws SQLException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        groupDAO.deleteGroupById(id);
+
+    public void deleteGroup(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
+        long id = Long.parseLong(request.getParameter("id"));
+        groupDAOImpl.deleteById(id);
         response.sendRedirect("/aston_crud3_war_exploded/groups");
     }
-    public void createGroup(HttpServletRequest request,HttpServletResponse response) throws ServletException, IOException {
+
+    public void createGroup(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RequestDispatcher dispatcher = request.getRequestDispatcher("group-form.jsp");
-            dispatcher.forward(request, response);
+        dispatcher.forward(request, response);
 
     }
+
     public void insertGroup(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException, ServletException {
-        String name = request.getParameter("name");
-        Group newGroup = new Group(name,0);
-        groupDAO.insertGroup(newGroup);
+
+         Group newGroup = getGroupFromRequest(request);
+         groupDAOImpl.save(newGroup);
         response.sendRedirect("/aston_crud3_war_exploded/groups");
     }
+
     public void showSubscribeMenu(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
-        List<Group> listOfNotSubscribedGroups = groupDAO.selectNotSubscribedGroupsForUser(id);
+       // List<Group> listOfNotSubscribedGroups = groupDAO.selectNotSubscribedGroupsForUser(id);
+        List<Group> listOfNotSubscribedGroups = groupDAOImpl.getAll();
         request.setAttribute("listGroup", listOfNotSubscribedGroups);
-        request.setAttribute("userId",id);
+        request.setAttribute("userId", id);
         RequestDispatcher dispatcher = request.getRequestDispatcher("menu-for-subscribe.jsp");
         dispatcher.forward(request, response);
     }
 
-    public void subscribeUserAtGroup(HttpServletRequest request,HttpServletResponse response) throws IOException, ServletException {
+    public void subscribeUserAtGroup(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         int userId = Integer.parseInt(request.getParameter("user_id"));
         int groupId = Integer.parseInt(request.getParameter("group_id"));
-        userDAO.subscribeUserAtGroup(userId,groupId);
+        userDAOImpl.subscribeAtGroup(userId, groupId);
 
-        List<Group> listOfNotSubscribedGroups = groupDAO.selectNotSubscribedGroupsForUser(userId);
+       // List<Group> listOfNotSubscribedGroups = groupDAO.selectNotSubscribedGroupsForUser(userId);
+        List<Group> listOfNotSubscribedGroups = groupDAOImpl.getAll();
         request.setAttribute("listGroup", listOfNotSubscribedGroups);
-        request.setAttribute("userId",userId);
+        request.setAttribute("userId", userId);
         RequestDispatcher dispatcher = request.getRequestDispatcher("menu-for-subscribe.jsp");
         dispatcher.forward(request, response);
 
     }
 
+    private Group getGroupFromRequest(HttpServletRequest request) {
+        String name = request.getParameter("name");
+        String type = request.getParameter("type");
+        String param = request.getParameter("param");
+        Group group = null;
+        switch (type) {
+            case "Channel":
+                return new ChannelGroup(name, param);
+            case "Private":
+                return new PrivateGroup(name, Integer.parseInt(param));
+            case "Public":
+                return new PublicGroup(name, param);
 
+        }
+        return null;
+
+    }
 }
