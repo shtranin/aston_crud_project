@@ -4,12 +4,7 @@ package com.example.aston_crud3.web;
 import com.example.aston_crud3.commandContainer.Command;
 import com.example.aston_crud3.commandContainer.CommandContainer;
 import com.example.aston_crud3.dao.groupDAO.GroupDAOImpl;
-import com.example.aston_crud3.dao.old_dao_classes.ChannelGroupDAOImpl;
-import com.example.aston_crud3.dao.old_dao_classes.PrivateGroupDAOImpl;
-import com.example.aston_crud3.dao.old_dao_classes.PublicGroupDAOImpl;
 import com.example.aston_crud3.dao.userDAO.UserDAOImpl;
-import com.example.aston_crud3.dao.old_dao_classes.GroupDAO;
-import com.example.aston_crud3.dao.old_dao_classes.UserDAO;
 import com.example.aston_crud3.model.group.ChannelGroup;
 import com.example.aston_crud3.model.group.Group;
 import com.example.aston_crud3.model.User;
@@ -28,16 +23,12 @@ import java.util.List;
 
 @WebServlet("/")
 public class UserServlet extends HttpServlet {
-    private UserDAO userDAO;
-    private GroupDAO groupDAO;
     private UserDAOImpl userDAOImpl;
     private GroupDAOImpl groupDAOImpl;
 
 
 
     public void init() {
-        userDAO = new UserDAO();
-        groupDAO = new GroupDAO();
         userDAOImpl = new UserDAOImpl();
         groupDAOImpl = new GroupDAOImpl();
 
@@ -150,7 +141,6 @@ public class UserServlet extends HttpServlet {
 
     public void showSubscribeMenu(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
-       // List<Group> listOfNotSubscribedGroups = groupDAO.selectNotSubscribedGroupsForUser(id);
         List<Group> listOfNotSubscribedGroups = groupDAOImpl.getAll();
         request.setAttribute("listGroup", listOfNotSubscribedGroups);
         request.setAttribute("userId", id);
@@ -163,7 +153,7 @@ public class UserServlet extends HttpServlet {
         int groupId = Integer.parseInt(request.getParameter("group_id"));
         userDAOImpl.subscribeAtGroup(userId, groupId);
 
-       // List<Group> listOfNotSubscribedGroups = groupDAO.selectNotSubscribedGroupsForUser(userId);
+
         List<Group> listOfNotSubscribedGroups = groupDAOImpl.getAll();
         request.setAttribute("listGroup", listOfNotSubscribedGroups);
         request.setAttribute("userId", userId);
@@ -176,7 +166,7 @@ public class UserServlet extends HttpServlet {
         String name = request.getParameter("name");
         String type = request.getParameter("type");
         String param = request.getParameter("param");
-        Group group = null;
+
         switch (type) {
             case "Channel":
                 return new ChannelGroup(name, param);
